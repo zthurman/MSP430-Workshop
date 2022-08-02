@@ -55,7 +55,7 @@ void initTimers(void)
     // Start the timer; make sure you specify the correct counting mode
     Timer_A_startCounter(
         TIMER_A1_BASE,
-        TIMER_A_CONTINUOUS_MODE
+        TIMER_A_UP_MODE
     );
 }
 
