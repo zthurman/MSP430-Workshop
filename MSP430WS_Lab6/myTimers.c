@@ -17,13 +17,23 @@ void initTimers(void)
     //    TimerA1 in Continuous mode using ACLK
     //    Toggle LED2 (Green) on/off every 2 seconds using timer interrupt (TA1IFG)
     //*************************************************************************
-    Timer_A_initContinuousModeParam initContParam = { 0 };
-        initContParam.clockSource =                 TIMER_A_CLOCKSOURCE_ACLK;  // Use ACLK (slower clock)
-        initContParam.clockSourceDivider =          TIMER_A_CLOCKSOURCE_DIVIDER_1;  // Input clock = ACLK / 1 = 32KHz
-        initContParam.timerInterruptEnable_TAIE =   TIMER_A_TAIE_INTERRUPT_ENABLE;  // Enable TAR -> 0 interrupt
-        initContParam.timerClear =                  TIMER_A_DO_CLEAR;               // Clear TAR & clock divider
-        initContParam.startTimer =                  false;                          // Don't start the timer, yet
-    Timer_A_initContinuousMode( TIMER_A1_BASE, &initContParam );
+//    Timer_A_initContinuousModeParam initContParam = { 0 };
+//        initContParam.clockSource =                 TIMER_A_CLOCKSOURCE_ACLK;  // Use ACLK (slower clock)
+//        initContParam.clockSourceDivider =          TIMER_A_CLOCKSOURCE_DIVIDER_1;  // Input clock = ACLK / 1 = 32KHz
+//        initContParam.timerInterruptEnable_TAIE =   TIMER_A_TAIE_INTERRUPT_ENABLE;  // Enable TAR -> 0 interrupt
+//        initContParam.timerClear =                  TIMER_A_DO_CLEAR;               // Clear TAR & clock divider
+//        initContParam.startTimer =                  false;                          // Don't start the timer, yet
+//    Timer_A_initContinuousMode( TIMER_A1_BASE, &initContParam );
+
+    Timer_A_initUpModeParam initUpParam = { 0 };
+        initUpParam.clockSource =                 TIMER_A_CLOCKSOURCE_ACLK;  // Use ACLK (slower clock)
+        initUpParam.clockSourceDivider =          TIMER_A_CLOCKSOURCE_DIVIDER_1;  // Input clock = ACLK / 1 = 32KHz
+        initUpParam.timerPeriod =                 32768;
+        initUpParam.timerInterruptEnable_TAIE =   TIMER_A_TAIE_INTERRUPT_ENABLE;  // Enable TAR -> 0 interrupt
+        initUpParam.captureCompareInterruptEnable_CCR0_CCIE =   TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;  // Enable CCR0 compare interrupt
+        initUpParam.timerClear =                  TIMER_A_DO_CLEAR;               // Clear TAR & clock divider
+        initUpParam.startTimer =                  false;                          // Don't start the timer, yet
+    Timer_A_initUpMode( TIMER_A1_BASE, &initUpParam );
 
     //*************************************************************************
     // 2. Setup Capture & Compare features
@@ -35,6 +45,9 @@ void initTimers(void)
     //*************************************************************************
     // Clear and enable interrupt flags inside TimerA peripheral
     Timer_A_clearTimerInterrupt( TIMER_A1_BASE );                               // Clear TA1IFG
+    Timer_A_clearCaptureCompareInterrupt( TIMER_A1_BASE,
+        TIMER_A_CAPTURECOMPARE_REGISTER_0                                         // Clear CCR0IFG
+    );
 
     //This enable was already done by the configureContinuousMode function
     //Timer_A_enableInterrupt( TIMER_A1_BASE );                                     // Enable interrupt on counter (TAR) rollover
@@ -49,6 +62,15 @@ void initTimers(void)
 //*****************************************************************************
 // Interrupt Service Routine
 //*****************************************************************************
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt void ccr0_ISR (void)
+{
+    // 4. Timer ISR and vector
+
+    // Toggle LED1 on/off
+    GPIO_toggleOutputOnPin( GPIO_PORT_P1, GPIO_PIN0 );
+}
+
 #pragma vector=TIMER1_A1_VECTOR
 __interrupt void timer1_ISR (void)
 {

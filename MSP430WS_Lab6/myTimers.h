@@ -10,6 +10,4 @@
 #ifndef MYTIMERS_H_
 #define MYTIMERS_H_
 
-
-
 #endif /* MYTIMERS_H_ */
